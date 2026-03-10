@@ -1,5 +1,5 @@
 import { get, put } from "./client";
-import type { AppSettings, ProjectUpdateRequest } from "../types/api";
+import type { AppSettings } from "../types/api";
 
 export function fetchSettings(): Promise<AppSettings> {
   return get<AppSettings>("/settings");
