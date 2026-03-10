@@ -1,5 +1,5 @@
-import { Check, Plus, Pencil } from "lucide-react";
-import type { Todo, Project } from "../types/api";
+import { Check, Plus, Pencil, Calendar, Target, Tag, Flag } from "lucide-react";
+import type { Todo, Project, Priority } from "../types/api";
 
 type ActivityViewProps = {
   todos: Todo[];
@@ -43,6 +43,18 @@ function formatDateHeading(dateStr: string): string {
 function getDateKey(dateStr: string): string {
   const d = new Date(dateStr);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+const PRIORITY_COLORS: Record<Priority, string> = {
+  none: "",
+  low: "text-blue-400",
+  medium: "text-amber-500",
+  high: "text-red-500",
+};
+
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 const TYPE_CONFIG = {
@@ -117,6 +129,39 @@ export function ActivityView({ todos, projects }: ActivityViewProps) {
                         >
                           {item.todo.task_name}
                         </span>
+                        {item.type === "updated" && (
+                          <div className="flex flex-wrap items-center gap-2 mt-1">
+                            {item.todo.priority && item.todo.priority !== "none" && (
+                              <span className={`flex items-center gap-0.5 text-[11px] ${PRIORITY_COLORS[item.todo.priority]}`}>
+                                <Flag size={10} />
+                                {item.todo.priority}
+                              </span>
+                            )}
+                            {item.todo.date && (
+                              <span className="flex items-center gap-0.5 text-[11px] text-text-tertiary">
+                                <Calendar size={10} />
+                                {formatDate(item.todo.date)}
+                              </span>
+                            )}
+                            {item.todo.deadline && (
+                              <span className="flex items-center gap-0.5 text-[11px] text-text-tertiary">
+                                <Target size={10} />
+                                {formatDate(item.todo.deadline)}
+                              </span>
+                            )}
+                            {item.todo.labels && item.todo.labels.length > 0 && item.todo.labels.map((l) => (
+                              <span key={l} className="flex items-center gap-0.5 text-[11px] text-text-tertiary">
+                                <Tag size={10} />
+                                {l}
+                              </span>
+                            ))}
+                            {item.todo.description && (
+                              <span className="text-[11px] text-text-tertiary truncate max-w-[200px]">
+                                {item.todo.description}
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
                       {project && (
                         <span className="text-[11px] text-text-tertiary flex items-center gap-1 flex-shrink-0">
