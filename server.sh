@@ -75,6 +75,10 @@ start_web() {
   fi
   echo -e "${CYAN}Starting${NC} todo-web..."
   cd "$ROOT_DIR/todo-web"
+  if [[ ! -d "node_modules" ]]; then
+    echo -e "${CYAN}Installing${NC} dependencies..."
+    npm install >> "$LOG_DIR/web.log" 2>&1
+  fi
   npx vite > "$LOG_DIR/web.log" 2>&1 &
   local pid=$!
   echo "$pid" > "$PID_DIR/web.pid"
