@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Check, Trash2, CalendarClock, Target, GripVertical } from "lucide-react";
+import { Check, Trash2, Calendar, CalendarClock, Target, BadgePlus, GripVertical } from "lucide-react";
 import type { Todo, Priority, Project, TodoCreateRequest } from "../types/api";
 import { CustomSelect } from "./CustomSelect";
 
@@ -316,6 +316,12 @@ export function TodoItem({
               {todo.task_name}
             </span>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
+              {todo.created_at && (
+                <span className="text-[12px] flex items-center gap-1 text-text-tertiary">
+                  <BadgePlus size={12} />
+                  {formatDate(todo.created_at)}
+                </span>
+              )}
               {todo.date && (
                 <span
                   className={`text-[12px] flex items-center gap-1 ${
@@ -324,7 +330,7 @@ export function TodoItem({
                       : "text-text-secondary"
                   }`}
                 >
-                  <CalendarClock size={12} />
+                  <Calendar size={12} />
                   {formatDate(todo.date)}
                 </span>
               )}
