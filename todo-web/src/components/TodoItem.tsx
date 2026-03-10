@@ -12,6 +12,8 @@ type TodoItemProps = {
   projects?: Project[];
   draggable?: boolean;
   isDragging?: boolean;
+  isReordering?: boolean;
+  dragOffsetY?: number;
   onDragStart?: (e: React.DragEvent) => void;
   onDragOver?: (e: React.DragEvent) => void;
   onDragEnd?: () => void;
@@ -60,6 +62,8 @@ export function TodoItem({
   projects,
   draggable,
   isDragging,
+  isReordering,
+  dragOffsetY = 0,
   onDragStart,
   onDragOver,
   onDragEnd,
@@ -73,6 +77,7 @@ export function TodoItem({
   const staggerClass = index < 10 ? `stagger-${index + 1}` : "";
   const nameInputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const gripRef = useRef<HTMLDivElement>(null);
   const saveRef = useRef<() => void>(() => {});
 
   // Edit state
@@ -126,6 +131,21 @@ export function TodoItem({
     onSave(data);
   };
 
+  // Attach non-passive touchstart on grip handle so preventDefault() works
+  useEffect(() => {
+    const grip = gripRef.current;
+    if (!grip || !onTouchDragStart) return;
+
+    function handleGripTouch(e: TouchEvent) {
+      e.stopPropagation();
+      e.preventDefault();
+      onTouchDragStart!(e.touches[0].clientY);
+    }
+
+    grip.addEventListener("touchstart", handleGripTouch, { passive: false });
+    return () => grip.removeEventListener("touchstart", handleGripTouch);
+  }, [onTouchDragStart]);
+
   // Click outside to save
   useEffect(() => {
     if (!isEditing) return;
@@ -157,7 +177,7 @@ export function TodoItem({
   return (
     <div
       ref={containerRef}
-      draggable={draggable && !isEditing}
+      draggable={("ontouchstart" in window) ? undefined : (draggable && !isEditing)}
       onDragStart={onDragStart}
       onDragOver={onDragOver}
       onDragEnd={onDragEnd}
@@ -165,20 +185,20 @@ export function TodoItem({
         ${disappearing ? "animate-slide-out" : `animate-fade-in ${staggerClass}`}
         group flex items-start gap-3 py-3
         ${isEditing ? "bg-bg-hover/30" : "hover:bg-bg-hover/50"} rounded-lg -mx-2 px-2
-        transition-all duration-200
         ${pendingComplete && !disappearing ? "opacity-40" : ""}
-        ${isDragging ? "opacity-30" : ""}
         ${draggable ? "cursor-grab active:cursor-grabbing" : ""}
+        ${isDragging
+          ? "max-md:scale-[1.02] max-md:shadow-lg max-md:shadow-black/10 max-md:bg-bg max-md:rounded-xl max-md:z-20 max-md:relative md:opacity-30"
+          : "transition-all duration-200"}
+        ${isReordering && !isDragging ? "max-md:opacity-50" : ""}
       `}
+      style={isDragging && dragOffsetY ? { transform: `translateY(${dragOffsetY}px) scale(1.02)` } : undefined}
     >
       {/* Drag handle */}
       {draggable && !isEditing && (
         <div
-          className="mt-1.5 flex-shrink-0 text-text-tertiary opacity-0 group-hover:opacity-100 md:transition-opacity md:duration-150 max-md:opacity-100 touch-none"
-          onTouchStart={(e) => {
-            e.stopPropagation();
-            onTouchDragStart?.(e.touches[0].clientY);
-          }}
+          ref={gripRef}
+          className="mt-1.5 max-md:mt-0 flex-shrink-0 text-text-tertiary opacity-0 group-hover:opacity-100 md:transition-opacity md:duration-150 max-md:opacity-100 touch-none max-md:py-3 max-md:px-2 max-md:-my-3 max-md:-ml-2 max-md:flex max-md:items-center"
         >
           <GripVertical size={14} />
         </div>

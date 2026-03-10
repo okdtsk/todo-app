@@ -105,6 +105,7 @@ export function TodoList({
   const listRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef<number>(0);
   const isTouching = useRef(false);
+  const [touchOffsetY, setTouchOffsetY] = useState(0);
 
   const isManual = sortKey === "manual";
   const sortedTodos = sortTodos(todos, sortKey, sortDir);
@@ -164,6 +165,7 @@ export function TodoList({
   function resetDrag() {
     setDraggingId(null);
     setDropIndex(null);
+    setTouchOffsetY(0);
     dragItemId.current = null;
   }
 
@@ -182,6 +184,7 @@ export function TodoList({
 
   const handleTouchMove = useCallback((clientY: number) => {
     if (!isTouching.current || !listRef.current) return;
+    setTouchOffsetY(clientY - touchStartY.current);
     const items = listRef.current.querySelectorAll("[data-todo-index]");
     let insertAt: number | null = null;
     items.forEach((el) => {
@@ -364,6 +367,8 @@ export function TodoList({
               projects={projects}
               draggable={isManual && !!onReorder}
               isDragging={draggingId === todo.id}
+              isReordering={draggingId !== null}
+              dragOffsetY={draggingId === todo.id ? touchOffsetY : 0}
               onDragStart={(e) => handleDragStart(e, todo.id)}
               onDragOver={(e) => handleDragOver(e, i)}
               onDragEnd={handleDragEnd}
