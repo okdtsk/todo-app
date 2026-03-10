@@ -22,6 +22,7 @@ import { TodayView } from "./views/TodayView";
 import { UpcomingView } from "./views/UpcomingView";
 import { ProjectView } from "./views/ProjectView";
 import { LabelsView } from "./views/LabelsView";
+import { ActivityView } from "./views/ActivityView";
 import { SettingsPanel } from "./components/SettingsPanel";
 
 type PendingCompletion = {
@@ -259,6 +260,8 @@ function App() {
         return <TodayView {...commonProps} />;
       case "upcoming":
         return <UpcomingView {...commonProps} />;
+      case "activity":
+        return <ActivityView todos={todos} projects={projects} />;
       case "project":
         return (
           <ProjectView projectId={currentView.projectId} onArchiveProject={handleArchiveProject} {...commonProps} />

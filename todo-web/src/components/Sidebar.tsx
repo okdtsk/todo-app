@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Sun, CalendarDays, Inbox, Plus, Tag, Settings } from "lucide-react";
+import { Sun, CalendarDays, Inbox, Activity, Plus, Tag, Settings } from "lucide-react";
 import type { Project, Todo } from "../types/api";
 
 export type ViewType =
   | { kind: "inbox" }
   | { kind: "today" }
   | { kind: "upcoming" }
+  | { kind: "activity" }
   | { kind: "project"; projectId: number }
   | { kind: "label"; label: string };
 
@@ -298,8 +299,9 @@ export function Sidebar({
         )}
       </div>
 
-      {/* Settings footer */}
-      <div className="px-3 py-4 border-t border-border">
+      {/* Footer */}
+      <div className="px-3 py-4 border-t border-border flex flex-col gap-0.5">
+        {navItem("Activity", { kind: "activity" }, undefined, <Activity size={16} />)}
         <button
           onClick={onOpenSettings}
           className="w-full text-left px-3 py-2 text-[14px] rounded-lg flex items-center gap-2 text-text-secondary hover:text-text hover:bg-bg-hover transition-colors duration-150"
