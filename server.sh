@@ -15,7 +15,15 @@ CYAN='\033[0;36m'
 BOLD='\033[1m'
 NC='\033[0m'
 
-declare -A PORTS=( [server]=8080 [web]=3001 )
+PORT_server=8080
+PORT_web=3001
+
+get_port() {
+  case "$1" in
+    server) echo "$PORT_server" ;;
+    web)    echo "$PORT_web" ;;
+  esac
+}
 
 is_running() {
   local name=$1
@@ -52,7 +60,7 @@ start_server() {
   echo "$pid" > "$PID_DIR/server.pid"
   sleep 1
   if kill -0 "$pid" 2>/dev/null; then
-    echo -e "${GREEN}server${NC} started (PID $pid) → http://localhost:${PORTS[server]}"
+    echo -e "${GREEN}server${NC} started (PID $pid) → http://localhost:${PORT_server}"
   else
     echo -e "${RED}server${NC} failed to start. Check $LOG_DIR/server.log"
     rm -f "$PID_DIR/server.pid"
@@ -72,7 +80,7 @@ start_web() {
   echo "$pid" > "$PID_DIR/web.pid"
   sleep 2
   if kill -0 "$pid" 2>/dev/null; then
-    echo -e "${GREEN}web${NC} started (PID $pid) → http://localhost:${PORTS[web]}"
+    echo -e "${GREEN}web${NC} started (PID $pid) → http://localhost:${PORT_web}"
   else
     echo -e "${RED}web${NC} failed to start. Check $LOG_DIR/web.log"
     rm -f "$PID_DIR/web.pid"
@@ -102,7 +110,7 @@ status_all() {
     if is_running "$name"; then
       local pid
       pid=$(get_pid "$name")
-      printf "%-14s ${GREEN}%-14s${NC} %-8s %s\n" "$name" "running" "$pid" "http://localhost:${PORTS[$name]}"
+      printf "%-14s ${GREEN}%-14s${NC} %-8s %s\n" "$name" "running" "$pid" "http://localhost:$(get_port "$name")"
     else
       printf "%-14s ${RED}%-14s${NC} %-8s %s\n" "$name" "stopped" "-" "-"
     fi
