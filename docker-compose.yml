@@ -1,0 +1,27 @@
+services:
+  server:
+    build:
+      context: ./todo-server
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - todo-data:/data
+    environment:
+      - DB_PATH=/data/todo.db
+      - AI_PROVIDER=${AI_PROVIDER:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+
+  web:
+    build:
+      context: ./todo-web
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      - server
+
+volumes:
+  todo-data:

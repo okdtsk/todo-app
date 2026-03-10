@@ -1,0 +1,16 @@
+{
+  "name": "tdtd",
+  "short_name": "tdtd",
+  "description": "Personal TODO management",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#007AFF",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
