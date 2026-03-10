@@ -179,39 +179,11 @@ export function SettingsPanel({
     }
   }
 
-  const MODEL_OPTIONS: Record<string, { value: string; label: string }[]> = {
-    gemini: [
-      { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
-      { value: "gemini-2.5-pro", label: "Gemini 2.5 Pro" },
-      { value: "gemini-2.0-flash", label: "Gemini 2.0 Flash" },
-      { value: "gemini-2.0-flash-lite", label: "Gemini 2.0 Flash Lite" },
-      { value: "gemini-1.5-flash", label: "Gemini 1.5 Flash" },
-      { value: "gemini-1.5-pro", label: "Gemini 1.5 Pro" },
-    ],
-    openai: [
-      { value: "gpt-4o", label: "GPT-4o" },
-      { value: "gpt-4o-mini", label: "GPT-4o Mini" },
-      { value: "gpt-4.1", label: "GPT-4.1" },
-      { value: "gpt-4.1-mini", label: "GPT-4.1 Mini" },
-      { value: "gpt-4.1-nano", label: "GPT-4.1 Nano" },
-      { value: "o3-mini", label: "o3 Mini" },
-    ],
-    anthropic: [
-      { value: "claude-sonnet-4-20250514", label: "Claude Sonnet 4" },
-      { value: "claude-opus-4-20250514", label: "Claude Opus 4" },
-      { value: "claude-haiku-4-20250414", label: "Claude Haiku 4" },
-      { value: "claude-3-5-sonnet-20241022", label: "Claude 3.5 Sonnet" },
-      { value: "claude-3-5-haiku-20241022", label: "Claude 3.5 Haiku" },
-    ],
+  const MODEL_PLACEHOLDERS: Record<string, string> = {
+    gemini: "e.g. gemini-2.5-flash",
+    openai: "e.g. gpt-4o",
+    anthropic: "e.g. claude-sonnet-4-20250514",
   };
-
-  function handleProviderChange(provider: string) {
-    setAiProvider(provider);
-    const models = MODEL_OPTIONS[provider];
-    if (models && models.length > 0) {
-      setAiModel(models[0].value);
-    }
-  }
 
   const tabClass = (t: Tab) =>
     `px-4 py-2 text-[13px] font-medium transition-colors duration-150 border-b-2 ${
@@ -524,7 +496,7 @@ export function SettingsPanel({
                 </label>
                 <CustomSelect
                   value={aiProvider}
-                  onChange={handleProviderChange}
+                  onChange={setAiProvider}
                   options={[
                     { value: "gemini", label: "Gemini" },
                     { value: "openai", label: "OpenAI" },
@@ -537,10 +509,12 @@ export function SettingsPanel({
                 <label className="text-[12px] text-text-secondary block mb-1">
                   Model
                 </label>
-                <CustomSelect
+                <input
+                  type="text"
                   value={aiModel}
-                  onChange={setAiModel}
-                  options={MODEL_OPTIONS[aiProvider] ?? []}
+                  onChange={(e) => setAiModel(e.target.value)}
+                  placeholder={MODEL_PLACEHOLDERS[aiProvider] ?? "Model ID"}
+                  className="w-full text-[13px] text-text bg-bg-secondary rounded px-3 py-2 outline-none focus:ring-1 focus:ring-accent/30"
                 />
               </div>
 
