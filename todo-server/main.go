@@ -63,21 +63,30 @@ func main() {
 
 	encKey := loadEncryptionKey(dsn)
 
-	// Initialize AI provider (optional — AI features degrade gracefully)
-	var gemini *ai.GeminiProvider
+	// Initialize AI provider from env vars (optional — DB settings take priority)
+	var fallbackProvider ai.Provider
 	if key := os.Getenv("GEMINI_API_KEY"); key != "" {
 		model := os.Getenv("GEMINI_MODEL")
-		gemini = ai.NewGeminiProvider(key, model)
-		log.Println("Gemini AI provider initialized")
+		fallbackProvider = ai.NewGeminiProvider(key, model)
+		log.Println("Gemini AI provider initialized (env)")
+	} else if key := os.Getenv("OPENAI_API_KEY"); key != "" {
+		model := os.Getenv("OPENAI_MODEL")
+		baseURL := os.Getenv("OPENAI_BASE_URL")
+		fallbackProvider = ai.NewOpenAIProvider(key, model, baseURL)
+		log.Println("OpenAI AI provider initialized (env)")
+	} else if key := os.Getenv("ANTHROPIC_API_KEY"); key != "" {
+		model := os.Getenv("ANTHROPIC_MODEL")
+		fallbackProvider = ai.NewAnthropicProvider(key, model)
+		log.Println("Anthropic AI provider initialized (env)")
 	} else {
-		log.Println("GEMINI_API_KEY not set — AI features disabled")
+		log.Println("No AI API key set — AI features rely on Settings configuration")
 	}
 
 	todoH := handler.NewTodoHandler(store)
 	projectH := handler.NewProjectHandler(store)
 	labelH := handler.NewLabelHandler(store)
 	settingsH := handler.NewSettingsHandler(store, encKey)
-	aiH := handler.NewAIHandler(store, gemini, encKey)
+	aiH := handler.NewAIHandler(store, fallbackProvider, encKey)
 
 	r := chi.NewRouter()
 

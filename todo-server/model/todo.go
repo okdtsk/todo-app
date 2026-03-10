@@ -111,10 +111,11 @@ type ErrorResponse struct {
 
 // AppSettings represents application-wide settings.
 type AppSettings struct {
-	AIProvider string   `json:"ai_provider"`
-	AIModel    string   `json:"ai_model"`
-	AIAPIKey   string   `json:"ai_api_key"`
-	AIKeySet   bool     `json:"ai_key_set"`
+	AIProvider    string   `json:"ai_provider"`
+	AIModel       string   `json:"ai_model"`
+	AIAPIKey      string   `json:"ai_api_key"`
+	AIKeySet      bool     `json:"ai_key_set"`
+	AIBaseURL  string   `json:"ai_base_url"`
 	LabelOrder []string `json:"label_order"`
 }
 

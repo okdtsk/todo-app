@@ -58,6 +58,7 @@ export type AppSettings = {
   ai_model: string;
   ai_api_key: string;
   ai_key_set: boolean;
+  ai_base_url: string;
   label_order: string[];
 };
 

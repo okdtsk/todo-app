@@ -18,38 +18,55 @@ import (
 
 // AIHandler handles HTTP requests for AI endpoints.
 type AIHandler struct {
-	store    *db.Store
-	provider *ai.GeminiProvider
-	encKey   []byte
+	store           *db.Store
+	fallbackProvider ai.Provider
+	encKey          []byte
 }
 
 // NewAIHandler creates a new AIHandler.
-func NewAIHandler(store *db.Store, provider *ai.GeminiProvider, encKey []byte) *AIHandler {
-	return &AIHandler{store: store, provider: provider, encKey: encKey}
+func NewAIHandler(store *db.Store, fallbackProvider ai.Provider, encKey []byte) *AIHandler {
+	return &AIHandler{store: store, fallbackProvider: fallbackProvider, encKey: encKey}
 }
 
-// getProvider returns an AI provider, checking DB settings first then falling back to env-var provider.
-func (h *AIHandler) getProvider() *ai.GeminiProvider {
+// getProvider returns an AI provider based on DB settings, falling back to env-var provider.
+func (h *AIHandler) getProvider() ai.Provider {
 	stored, _ := h.store.GetSetting("ai_api_key")
-	if stored != "" {
-		key, err := crypto.Decrypt(stored, h.encKey)
-		if err != nil {
-			// Legacy plaintext fallback
-			key = stored
-		}
-		model, _ := h.store.GetSetting("ai_model")
-		return ai.NewGeminiProvider(key, model)
+	if stored == "" {
+		return h.fallbackProvider
 	}
-	return h.provider
+
+	key, err := crypto.Decrypt(stored, h.encKey)
+	if err != nil {
+		// Legacy plaintext fallback
+		key = stored
+	}
+
+	provider, _ := h.store.GetSetting("ai_provider")
+	model, _ := h.store.GetSetting("ai_model")
+	baseURL, _ := h.store.GetSetting("ai_base_url")
+
+	return buildProvider(provider, key, model, baseURL)
+}
+
+// buildProvider creates the appropriate provider based on the provider name.
+func buildProvider(provider, apiKey, model, baseURL string) ai.Provider {
+	switch provider {
+	case "openai":
+		return ai.NewOpenAIProvider(apiKey, model, baseURL)
+	case "anthropic":
+		return ai.NewAnthropicProvider(apiKey, model)
+	default:
+		return ai.NewGeminiProvider(apiKey, model)
+	}
 }
 
 // Analyze handles POST /api/v1/ai/analyze.
-// Accepts a message with optional URL or image, sends to Gemini for analysis,
+// Accepts a message with optional URL or image, sends to AI provider for analysis,
 // executes the returned todo actions, and returns results.
 func (h *AIHandler) Analyze(w http.ResponseWriter, r *http.Request) {
 	provider := h.getProvider()
 	if provider == nil {
-		writeError(w, http.StatusServiceUnavailable, "AI provider not configured. Set GEMINI_API_KEY or configure in Settings.")
+		writeError(w, http.StatusServiceUnavailable, "AI provider not configured. Set an API key in Settings.")
 		return
 	}
 
@@ -103,11 +120,16 @@ func (h *AIHandler) Analyze(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Call Gemini
+	// Call AI provider
 	ctx := r.Context()
 	var result string
 	if len(imageData) > 0 {
-		result, err = provider.CompleteMultimodal(ctx, prompt, imageData, imageMIME)
+		if mp, ok := provider.(ai.MultimodalProvider); ok {
+			result, err = mp.CompleteMultimodal(ctx, prompt, imageData, imageMIME)
+		} else {
+			// Provider doesn't support images — fall back to text-only
+			result, err = provider.Complete(ctx, prompt)
+		}
 	} else {
 		result, err = provider.Complete(ctx, prompt)
 	}

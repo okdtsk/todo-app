@@ -48,6 +48,7 @@ export function SettingsPanel({
   const [aiKey, setAiKey] = useState("");
   const [aiProvider, setAiProvider] = useState("gemini");
   const [aiModel, setAiModel] = useState("gemini-2.5-flash");
+  const [aiBaseURL, setAiBaseURL] = useState("");
   const [showKey, setShowKey] = useState(false);
   const [editingProjectId, setEditingProjectId] = useState<number | null>(null);
   const [editingLabel, setEditingLabel] = useState<string | null>(null);
@@ -69,6 +70,7 @@ export function SettingsPanel({
       setSettings(s);
       setAiProvider(s.ai_provider || "gemini");
       setAiModel(s.ai_model || "gemini-2.5-flash");
+      setAiBaseURL(s.ai_base_url || "");
     });
     fetchArchivedProjects().then(setArchivedProjects);
   }, []);
@@ -160,15 +162,54 @@ export function SettingsPanel({
   async function handleSaveAI() {
     setSaving(true);
     try {
-      const data: Partial<AppSettings> = { ai_provider: aiProvider, ai_model: aiModel };
+      const data: Partial<AppSettings> = {
+        ai_provider: aiProvider,
+        ai_model: aiModel,
+        ai_base_url: aiBaseURL,
+      };
       if (aiKey) {
         data.ai_api_key = aiKey;
       }
       const updated = await updateSettings(data);
       setSettings(updated);
       setAiKey("");
+      onDataChanged();
     } finally {
       setSaving(false);
+    }
+  }
+
+  const MODEL_OPTIONS: Record<string, { value: string; label: string }[]> = {
+    gemini: [
+      { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
+      { value: "gemini-2.5-pro", label: "Gemini 2.5 Pro" },
+      { value: "gemini-2.0-flash", label: "Gemini 2.0 Flash" },
+      { value: "gemini-2.0-flash-lite", label: "Gemini 2.0 Flash Lite" },
+      { value: "gemini-1.5-flash", label: "Gemini 1.5 Flash" },
+      { value: "gemini-1.5-pro", label: "Gemini 1.5 Pro" },
+    ],
+    openai: [
+      { value: "gpt-4o", label: "GPT-4o" },
+      { value: "gpt-4o-mini", label: "GPT-4o Mini" },
+      { value: "gpt-4.1", label: "GPT-4.1" },
+      { value: "gpt-4.1-mini", label: "GPT-4.1 Mini" },
+      { value: "gpt-4.1-nano", label: "GPT-4.1 Nano" },
+      { value: "o3-mini", label: "o3 Mini" },
+    ],
+    anthropic: [
+      { value: "claude-sonnet-4-20250514", label: "Claude Sonnet 4" },
+      { value: "claude-opus-4-20250514", label: "Claude Opus 4" },
+      { value: "claude-haiku-4-20250414", label: "Claude Haiku 4" },
+      { value: "claude-3-5-sonnet-20241022", label: "Claude 3.5 Sonnet" },
+      { value: "claude-3-5-haiku-20241022", label: "Claude 3.5 Haiku" },
+    ],
+  };
+
+  function handleProviderChange(provider: string) {
+    setAiProvider(provider);
+    const models = MODEL_OPTIONS[provider];
+    if (models && models.length > 0) {
+      setAiModel(models[0].value);
     }
   }
 
@@ -483,9 +524,11 @@ export function SettingsPanel({
                 </label>
                 <CustomSelect
                   value={aiProvider}
-                  onChange={setAiProvider}
+                  onChange={handleProviderChange}
                   options={[
                     { value: "gemini", label: "Gemini" },
+                    { value: "openai", label: "OpenAI" },
+                    { value: "anthropic", label: "Anthropic (Claude)" },
                   ]}
                 />
               </div>
@@ -497,15 +540,25 @@ export function SettingsPanel({
                 <CustomSelect
                   value={aiModel}
                   onChange={setAiModel}
-                  options={[
-                    { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
-                    { value: "gemini-2.0-flash", label: "Gemini 2.0 Flash" },
-                    { value: "gemini-2.0-flash-lite", label: "Gemini 2.0 Flash Lite" },
-                    { value: "gemini-1.5-flash", label: "Gemini 1.5 Flash" },
-                    { value: "gemini-1.5-pro", label: "Gemini 1.5 Pro" },
-                  ]}
+                  options={MODEL_OPTIONS[aiProvider] ?? []}
                 />
               </div>
+
+              {aiProvider === "openai" && (
+                <div>
+                  <label className="text-[12px] text-text-secondary block mb-1">
+                    Base URL
+                    <span className="text-text-tertiary ml-1">(optional, for compatible APIs)</span>
+                  </label>
+                  <input
+                    type="url"
+                    value={aiBaseURL}
+                    onChange={(e) => setAiBaseURL(e.target.value)}
+                    placeholder="https://api.openai.com/v1"
+                    className="w-full text-[13px] text-text bg-bg-secondary rounded px-3 py-2 outline-none focus:ring-1 focus:ring-accent/30"
+                  />
+                </div>
+              )}
 
               <div>
                 <label className="text-[12px] text-text-secondary block mb-1">

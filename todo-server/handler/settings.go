@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/okdtsk/todo-app/todo-server/crypto"
 	"github.com/okdtsk/todo-app/todo-server/db"
@@ -66,6 +67,13 @@ func (h *SettingsHandler) Update(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	if req.AIProvider != "" {
+		if err := h.store.SetSetting("ai_base_url", strings.TrimSpace(req.AIBaseURL)); err != nil {
+			writeError(w, http.StatusInternalServerError, "failed to save ai_base_url")
+			return
+		}
+	}
+
 	if req.LabelOrder != nil {
 		orderJSON, _ := json.Marshal(req.LabelOrder)
 		if err := h.store.SetSetting("label_order", string(orderJSON)); err != nil {
@@ -112,6 +120,7 @@ func (h *SettingsHandler) buildSettings() (model.AppSettings, error) {
 		AIProvider: all["ai_provider"],
 		AIModel:    all["ai_model"],
 		AIKeySet:   apiKey != "",
+		AIBaseURL:  all["ai_base_url"],
 		LabelOrder: []string{},
 	}
 

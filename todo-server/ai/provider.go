@@ -6,3 +6,9 @@ import "context"
 type Provider interface {
 	Complete(ctx context.Context, prompt string) (string, error)
 }
+
+// MultimodalProvider extends Provider with image support.
+type MultimodalProvider interface {
+	Provider
+	CompleteMultimodal(ctx context.Context, text string, imageData []byte, imageMIME string) (string, error)
+}
