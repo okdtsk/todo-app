@@ -4,6 +4,7 @@ import { ChevronDown } from "lucide-react";
 type Option = {
   value: string;
   label: string;
+  color?: string;
 };
 
 type CustomSelectProps = {
@@ -46,7 +47,13 @@ export function CustomSelect({
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between gap-1 bg-bg-secondary text-[12px] text-text py-1.5 px-2 rounded outline-none focus:ring-1 focus:ring-accent/30 transition-all duration-150"
       >
-        <span className={selected ? "text-text" : "text-text-tertiary"}>
+        <span className={`flex items-center gap-1.5 ${selected ? "text-text" : "text-text-tertiary"}`}>
+          {selected?.color && (
+            <span
+              className="w-2 h-2 rounded-full flex-shrink-0"
+              style={{ backgroundColor: selected.color }}
+            />
+          )}
           {displayLabel}
         </span>
         <ChevronDown
@@ -67,12 +74,18 @@ export function CustomSelect({
                 onChange(opt.value);
                 setOpen(false);
               }}
-              className={`w-full text-left px-3 py-1.5 text-[12px] hover:bg-bg-hover transition-colors duration-100 ${
+              className={`w-full text-left px-3 py-1.5 text-[12px] hover:bg-bg-hover transition-colors duration-100 flex items-center gap-1.5 ${
                 opt.value === value
                   ? "text-accent font-medium"
                   : "text-text"
               }`}
             >
+              {opt.color && (
+                <span
+                  className="w-2 h-2 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: opt.color }}
+                />
+              )}
               {opt.label}
             </button>
           ))}

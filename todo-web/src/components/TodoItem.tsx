@@ -283,7 +283,7 @@ export function TodoItem({
                     onChange={setProjectId}
                     options={[
                       { value: "", label: "No project" },
-                      ...projects.map((p) => ({ value: String(p.id), label: p.name })),
+                      ...projects.map((p) => ({ value: String(p.id), label: p.name, color: p.color })),
                     ]}
                   />
                 )}
