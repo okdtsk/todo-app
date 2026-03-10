@@ -29,9 +29,10 @@ export default defineConfig({
     }),
   ],
   server: {
-    host: '0.0.0.0',
+    host: '127.0.0.1',
     allowedHosts: ['.ts.net'],
     port: 3001,
+    strictPort: true,
     hmr: {
       // HMR WebSocket only works on direct localhost access.
       // Remote clients (Tailscale) should not attempt WebSocket connections.

@@ -130,13 +130,18 @@ func main() {
 		r.Post("/ai/daily-summary", aiH.DailySummary)
 	})
 
+	host := os.Getenv("HOST")
+	if host == "" {
+		host = "127.0.0.1"
+	}
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
+	addr := host + ":" + port
 
-	log.Printf("starting server on :%s", port)
-	if err := http.ListenAndServe(":"+port, r); err != nil {
+	log.Printf("starting server on %s", addr)
+	if err := http.ListenAndServe(addr, r); err != nil {
 		log.Fatalf("server error: %v", err)
 	}
 }

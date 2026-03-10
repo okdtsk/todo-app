@@ -39,3 +39,7 @@ Thumbs.db
 
 # Encryption key
 .encryption_key
+
+# Dev script runtime
+.pids/
+.logs/
